@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/x-icon" href="https://images.unsplash.com/photo-1667840579428-599d8e942363?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y3VsY3VsYXRvciUyMGxvZ298ZW58MHx8MHx8fDA%3D">
+  <title>Professional Calculator</title>
+  <style>
+    :root {
+      --primary-color: #3498db;
+      --secondary-color: #2980b9;
+      --accent-color: #e74c3c;
+      --light-gray: #ecf0f1;
+      --dark-gray: #bdc3c7;
+      --text-color: #2c3e50;
+      --shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .calculator {
+      background: white;
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 340px;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .calculator:hover {
+      transform: translateY(-5px);
+    }
+
+    .display {
+      padding: 25px 20px;
+      background: var(--text-color);
+      color: white;
+      text-align: right;
+      position: relative;
+    }
+
+    #history {
+      font-size: 14px;
+      opacity: 0.7;
+      height: 18px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    #display {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: white;
+      font-size: 32px;
+      text-align: right;
+      outline: none;
+      font-weight: 300;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--dark-gray);
+    }
+
+    button {
+      border: none;
+      padding: 20px 10px;
+      font-size: 18px;
+      cursor: pointer;
+      background: white;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .operator {
+      background: var(--light-gray);
+      font-weight: 500;
+    }
+
+    .equals {
+      background: var(--primary-color);
+      color: white;
+    }
+
+    .equals:hover {
+      background: var(--secondary-color);
+    }
+
+    .clear, .delete {
+      background: var(--light-gray);
+    }
+
+    .clear:hover, .delete:hover {
+      background: var(--dark-gray);
+    }
+
+    .special {
+      font-weight: 500;
+    }
+
+    @media (max-width: 400px) {
+      button {
+        padding: 18px 5px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="calculator">
+    <div class="display">
+      <div id="history"></div>
+      <input type="text" id="display" readonly>
+    </div>
+    <div class="buttons">
+      <button class="clear" onclick="clearAll()">AC</button>
+      <button class="delete" onclick="deleteLast()">⌫</button>
+      <button class="operator special" onclick="appendOperation('%')">%</button>
+      <button class="operator" onclick="appendOperation('/')">÷</button>
+
+      <button onclick="appendNumber('7')">7</button>
+      <button onclick="appendNumber('8')">8</button>
+      <button onclick="appendNumber('9')">9</button>
+      <button class="operator" onclick="appendOperation('*')">×</button>
+
+      <button onclick="appendNumber('4')">4</button>
+      <button onclick="appendNumber('5')">5</button>
+      <button onclick="appendNumber('6')">6</button>
+      <button class="operator" onclick="appendOperation('-')">−</button>
+
+      <button onclick="appendNumber('1')">1</button>
+      <button onclick="appendNumber('2')">2</button>
+      <button onclick="appendNumber('3')">3</button>
+      <button class="operator" onclick="appendOperation('+')">+</button>
+
+      <button onclick="appendNumber('0')" style="grid-column: span 2;">0</button>
+      <button onclick="appendNumber('.')">.</button>
+      <button class="equals" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    const historyDisplay = document.getElementById('history');
+    let currentInput = '';
+    let previousInput = '';
+    let operation = null;
+    let resetScreen = false;
+
+    function appendNumber(number) {
+      if (display.value === '0' || resetScreen) {
+        resetScreen = false;
+        currentInput = '';
+      }
+      
+      if (number === '.' && currentInput.includes('.')) return;
+      currentInput += number;
+      display.value = currentInput;
+    }
+
+    function appendOperation(op) {
+      if (currentInput === '' && previousInput === '') return;
+      
+      if (currentInput === '' && previousInput !== '') {
+        operation = op;
+        return;
+      }
+      
+      if (operation !== null) calculate();
+      previousInput = currentInput;
+      operation = op;
+      historyDisplay.textContent = `${previousInput} ${operation}`;
+      resetScreen = true;
+    }
+
+    function calculate() {
+      if (operation === null || resetScreen) return;
+      
+      let result;
+      const prev = parseFloat(previousInput);
+      const current = parseFloat(currentInput);
+      
+      switch (operation) {
+        case '+':
+          result = prev + current;
+          break;
+        case '-':
+          result = prev - current;
+          break;
+        case '*':
+          result = prev * current;
+          break;
+        case '/':
+          result = prev / current;
+          break;
+        case '%':
+          result = prev % current;
+          break;
+        default:
+          return;
+      }
+      
+      currentInput = result.toString();
+      display.value = currentInput;
+      historyDisplay.textContent = `${previousInput} ${operation} ${current} =`;
+      operation = null;
+    }
+
+    function clearAll() {
+      currentInput = '';
+      previousInput = '';
+      operation = null;
+      display.value = '0';
+      historyDisplay.textContent = '';
+    }
+
+    function deleteLast() {
+      if (resetScreen) return;
+      currentInput = currentInput.slice(0, -1);
+      display.value = currentInput || '0';
+    }
+
+    // Keyboard support
+    document.addEventListener('keydown', (e) => {
+      if (e.key >= '0' && e.key <= '9') appendNumber(e.key);
+      else if (e.key === '.') appendNumber('.');
+      else if (e.key === '+' || e.key === '-' || e.key === '*' || e.key === '/' || e.key === '%') 
+        appendOperation(e.key);
+      else if (e.key === 'Enter' || e.key === '=') calculate();
+      else if (e.key === 'Escape') clearAll();
+      else if (e.key === 'Backspace') deleteLast();
+    });
+  </script>
+</body>
+</html>
